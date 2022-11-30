@@ -59,13 +59,25 @@ def get_wsgi_request_user(wsgi_request):
 class DataDogJSONFormatter(json_log_formatter.JSONFormatter):
     def json_record(self, message, extra, record):
 
+        levelnum = 6
+        if record.levelname == "DEBUG":
+            levelnum = 7
+        elif record.levelname == "INFO":
+            levelnum = 6
+        elif record.levelname == "WARNING":
+            levelnum = 4
+        elif record.levelname == "ERROR":
+            levelnum = 3
+        elif record.levelname == "CRITICAL":
+            levelnum = 2
+
         log_entry_dict = {
             "message": message,
             "logger.name": record.name,
             "logger.thread_name": record.threadName,
             "logger.method_name": record.funcName,
             "syslog.timestamp": pytz.utc.localize(datetime.datetime.utcfromtimestamp(record.created)).isoformat(),
-            "syslog.severity": record.levelname,
+            "syslog.severity": levelnum,
         }
 
         # Add special `dd.` log record attributes added by `ddtrace` library
